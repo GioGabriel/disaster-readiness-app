@@ -1,0 +1,247 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter/material.dart';
+import 'login_page.dart';
+
+class RegisterPage extends StatefulWidget {
+  static const String registerPage = '/register';
+
+
+  const RegisterPage({super.key});
+
+  @override
+  State<RegisterPage> createState() => _RegisterPageState();
+}
+
+class _RegisterPageState extends State<RegisterPage> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+
+  final DatabaseReference _database =
+  FirebaseDatabase.instance.ref().child('users');
+
+  final TextEditingController _nameController = TextEditingController();
+
+  final TextEditingController _emailController = TextEditingController();
+
+  final TextEditingController _passwordController = TextEditingController();
+
+  final TextEditingController _confirmPasswordController = TextEditingController();
+
+  Future<void> _registerWithEmailAndPassword(BuildContext context) async {
+    final String name = _nameController.text.trim();
+    final String email = _emailController.text.trim();
+    final String password = _passwordController.text.trim();
+    final String confirmPassword = _confirmPasswordController.text.trim();
+
+    if (name.isEmpty || email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text("Registration Error"),
+            content: const Text("Please fill in all fields."),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text("OK"),
+              ),
+            ],
+          );
+        },
+      );
+      return;
+    }
+
+    if (password != confirmPassword) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text("Registration Error"),
+            content: const Text("Passwords do not match."),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text("OK"),
+              ),
+            ],
+          );
+        },
+      );
+      return;
+    }
+
+    try {
+      final UserCredential userCredential =
+      await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      // Send email verification
+      await userCredential.user!.sendEmailVerification();
+
+      // Store user data in Realtime Database
+      final newUser = {
+        'name': name,
+        'email': email,
+      };
+      await _database.child(userCredential.user!.uid).set(newUser);
+
+      // ignore: use_build_context_synchronously
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text("Registration Successful"),
+            content: const Text("Please check your email for verification."),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  Navigator.pushReplacementNamed(context, LoginPage.loginPage);
+                },
+                child: const Text("OK"),
+              ),
+            ],
+          );
+        },
+      );
+    } catch (e) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text("Registration Error"),
+            content: Text(e.toString()),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text("OK"),
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const Text(
+              "Disaster Readiness Monitoring Application",
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 28.0,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const Text(
+              "Register for your Account",
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 44.0,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(
+              height: 44.0,
+            ),
+            TextField(
+              controller: _nameController,
+              keyboardType: TextInputType.name,
+              decoration: const InputDecoration(
+                hintText: "User Name",
+                prefixIcon: Icon(Icons.man_2_rounded, color: Colors.blueAccent),
+              ),
+            ),
+            const SizedBox(
+              height: 26.0,
+            ),
+            TextField(
+              controller: _emailController,
+              keyboardType: TextInputType.emailAddress,
+              decoration: const InputDecoration(
+                hintText: "User Email",
+                prefixIcon: Icon(Icons.mail_rounded, color: Colors.blueAccent),
+              ),
+            ),
+            const SizedBox(
+              height: 26.0,
+            ),
+            TextField(
+              controller: _passwordController,
+              obscureText: true,
+              decoration: const InputDecoration(
+                hintText: "User Password",
+                prefixIcon: Icon(Icons.security_rounded, color: Colors.blueAccent),
+              ),
+            ),
+            const SizedBox(
+              height: 26.0,
+            ),
+            TextField(
+              controller: _confirmPasswordController,
+              obscureText: true,
+              decoration: const InputDecoration(
+                  hintText: "Confirm Password",
+                  prefixIcon: Icon(Icons.security_rounded, color: Colors.blueAccent)
+              ),
+            ),
+            const SizedBox(
+              height: 88.0,
+            ),
+            ElevatedButton(
+              onPressed: () {
+                _registerWithEmailAndPassword(context);
+              },
+              child: const Text("Register"),
+            ),
+            const SizedBox(
+              height: 12.0,
+            ),
+            const SizedBox(
+              height: 12.0,
+            ),
+            Text.rich(
+              TextSpan(
+                text: "Already have an account? ",
+                children: [
+                  TextSpan(
+                    text: "Login Here",
+                    style: const TextStyle(
+                      color: Colors.black,
+                      decoration: TextDecoration.underline,
+                    ),
+                    recognizer: TapGestureRecognizer()
+                      ..onTap = () {
+                        Navigator.of(context).pushNamedAndRemoveUntil(
+                          LoginPage.loginPage,
+                              (Route<dynamic> route) => false,
+                        );
+                      },
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

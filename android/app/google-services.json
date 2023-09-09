@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "951151734092",
+    "project_id": "disasterreadiness-621b8",
+    "storage_bucket": "disasterreadiness-621b8.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:951151734092:android:f441ab799cd721eaa733e9",
+        "android_client_info": {
+          "package_name": "com.example.disaster_readiness_application"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "951151734092-ukk0vrcmk1qdmsjbuajol9m4h2g905c3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCss--u7Ku4lg_97AUjbKtUoyBBOMHEhlY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "951151734092-ukk0vrcmk1qdmsjbuajol9m4h2g905c3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

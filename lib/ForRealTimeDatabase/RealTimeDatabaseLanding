@@ -1,0 +1,72 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/material.dart';
+
+class LandingPage extends StatelessWidget {
+  static const String landingPage = '/landing';
+
+  LandingPage({Key? key}) : super(key: key);
+
+  final User? user = FirebaseAuth.instance.currentUser;
+
+  final DatabaseReference databaseRef =
+  FirebaseDatabase.instance.ref().child("users");
+
+  void _sendEmergencySignal(BuildContext context) {
+    if (user != null) {
+      DatabaseReference userRef = databaseRef.child(user!.uid).child("emergency");
+      userRef.set(true).then((_) {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text("Emergency Sent"),
+              content: const Text("Emergency signal has been sent."),
+              actions: [
+                TextButton(
+                  child: const Text("OK"),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Landing Page"),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              "Welcome to the Landing Page!",
+              style: TextStyle(
+                fontSize: 24.0,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                _sendEmergencySignal(context);
+              },
+              child: const Text("Emergency"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

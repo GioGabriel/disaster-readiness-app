@@ -1,0 +1,106 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+
+class LandingPage extends StatelessWidget {
+  static const String landingPage = '/landing';
+
+  LandingPage({Key? key}) : super(key: key);
+
+  final User? user = FirebaseAuth.instance.currentUser;
+  final CollectionReference _usersCollection =
+  FirebaseFirestore.instance.collection('users');
+
+  void _sendEmergencySignal(BuildContext context) {
+    if (user != null) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          TextEditingController _emergencyController = TextEditingController();
+
+          return AlertDialog(
+            title: const Text("Emergency"),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text("What is the emergency?"),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: _emergencyController,
+                  decoration: const InputDecoration(
+                    hintText: "Emergency description",
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                child: const Text("Send"),
+                onPressed: () {
+                  String emergency = _emergencyController.text.trim();
+                  if (emergency.isNotEmpty) {
+                    DocumentReference userRef =
+                    _usersCollection.doc(user!.uid).collection('emergency').doc();
+                    userRef.set({'active': true, 'description': emergency}).then((_) {
+                      Navigator.of(context).pop();
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: const Text("Emergency Sent"),
+                            content: const Text("Emergency signal has been sent."),
+                            actions: [
+                              TextButton(
+                                child: const Text("OK"),
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    });
+                  }
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Landing Page"),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              "Welcome to the Landing Page!",
+              style: TextStyle(
+                fontSize: 16.0,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                _sendEmergencySignal(context);
+              },
+              child: const Text("Emergency"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
